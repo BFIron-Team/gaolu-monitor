@@ -1,18 +1,39 @@
 import math
 import random
 import time
+import sys          # 新增这一行
 from datetime import datetime
 
+# ============================================================
+# 模式选择（命令行参数方式）
+# 用法：
+#   python simulator.py          → 默认 normal（平稳）
+#   python simulator.py normal   → 正常平稳模式
+#   python simulator.py extreme  → 剧烈波动模式（测试预警）
+# ============================================================
+if len(sys.argv) > 1 and sys.argv[1].lower() == "extreme":
+    RUN_MODE = "extreme"
+else:
+    RUN_MODE = "normal"  # 默认平稳模式
+
+# 打印当前模式，方便确认
+print(f"当前模拟模式: {RUN_MODE}")
 # ========== 基值设定 ==========
 BASE_TEMP = 1050.0          # 风温基值 (℃)
 BASE_PRESSURE = 300.0       # 炉压基值 (kPa)
 BASE_PERMEABILITY = 1.0     # 透气性基值 (无量纲)
 
-# ========== 正弦趋势参数 ==========
-TREND_PERIOD = 30.0         # 正弦波周期 (秒)
-TEMP_AMPLITUDE = 30.0       # 风温振幅 (℃)
-PRESSURE_AMPLITUDE = 20.0   # 炉压振幅 (kPa)
-PERM_AMPLITUDE = 0.15       # 透气性振幅
+# ========== 正弦趋势参数（根据模式自动选择） ==========
+if RUN_MODE == "extreme":
+    TEMP_AMPLITUDE = 80.0       # 风温振幅 (℃)  — 剧烈波动
+    PRESSURE_AMPLITUDE = 60.0   # 炉压振幅 (kPa) — 剧烈波动
+    PERM_AMPLITUDE = 0.30       # 透气性振幅     — 剧烈波动
+    TREND_PERIOD = 20.0         # 周期缩短，波动更快
+else:
+    TEMP_AMPLITUDE = 30.0       # 风温振幅 (℃)  — 平稳
+    PRESSURE_AMPLITUDE = 20.0   # 炉压振幅 (kPa) — 平稳
+    PERM_AMPLITUDE = 0.15       # 透气性振幅     — 平稳
+    TREND_PERIOD = 30.0         # 周期较长
 
 # ========== 噪声参数 ==========
 TEMP_NOISE_STD = 5.0        # 风温噪声标准差 (℃)
@@ -108,12 +129,18 @@ class BlastFurnaceSimulator:
         return frame
 
 
-# ========== 测试代码（运行后会自动执行） ==========
+# ========== 测试代码（运行后自动执行） ==========
 if __name__ == "__main__":
     simulator = BlastFurnaceSimulator()
-    print("=== 高炉数据模拟器运行测试 ===")
-    for i in range(10):
+    print(f"=== 高炉数据模拟器运行测试（模式: {RUN_MODE}）===")
+    print("运行 20 秒，观察数据波动和指令触发情况...")
+    print("-" * 50)
+    
+    for i in range(20):
         frame = simulator.next_frame(data_type="realtime")
         instr_display = frame["instruction"] if frame["instruction"] else "(无指令)"
-        print(f"帧{i+1}: 炉压={frame['metrics']['炉压']}kPa, 风温={frame['metrics']['风温']}℃, 指令={instr_display}")
+        print(f"帧{i+1:2d}: 炉压={frame['metrics']['炉压']:6.2f}kPa, 风温={frame['metrics']['风温']:6.2f}℃, 指令={instr_display}")
         time.sleep(1)
+    
+    print("-" * 50)
+    print("测试完成！")
