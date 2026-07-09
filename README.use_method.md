@@ -1,5 +1,5 @@
-启动模拟器
-cd D:\gaolu-monitor
+#启动模拟器
+#cd D:\gaolu-monitor
 python simulator.py                → 普通测试模式（normal）
 python simulator.py normal         → 普通测试模式（平稳）
 python simulator.py extreme        → 普通测试模式（剧烈波动）
