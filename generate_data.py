@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD
 from datetime import datetime, timedelta
 
 def generate_blast_furnace_data(days=7, freq='1h'):
